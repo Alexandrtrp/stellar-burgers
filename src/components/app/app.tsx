@@ -23,7 +23,11 @@ import {
 } from 'react-router-dom';
 import { ReactNode, useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
-import { getFeedsThunk, getIngredientsThunk } from '../../services/burgerSlice';
+import {
+  getFeedsThunk,
+  getIngredientsThunk,
+  getOrdersThunk
+} from '../../services/burgerSlice';
 import { getUserThunk } from '../../services/authSlice';
 
 interface ProtectedRouteProps {
@@ -53,11 +57,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 const App = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
   useEffect(() => {
     dispatch(getIngredientsThunk());
     dispatch(getFeedsThunk());
     dispatch(getUserThunk());
   }, []);
+
+  useEffect(() => {
+    dispatch(getOrdersThunk());
+  }, [isAuthenticated]);
 
   return (
     <div className={styles.app}>
@@ -140,9 +150,11 @@ const App = () => {
         <Route
           path='/profile/orders/:number'
           element={
-            <Modal title={'Мой заказ'} onClose={(): void => navigate(-1)}>
-              <OrderInfo />
-            </Modal>
+            <ProtectedRoute>
+              <Modal title={'Мой заказ'} onClose={(): void => navigate(-1)}>
+                <OrderInfo />
+              </Modal>
+            </ProtectedRoute>
           }
         />
       </Routes>

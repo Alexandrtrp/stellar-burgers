@@ -40,20 +40,6 @@ export const updateUserThunk = createAsyncThunk(
   async (user: TRegisterData) => updateUserApi(user)
 );
 
-// Восстановление пароля
-
-export const forgotPasswordThunk = createAsyncThunk(
-  'auth/forgotPasswordThunk',
-  async (data: { email: string }) => forgotPasswordApi(data)
-);
-
-// Сброс пароля
-
-export const resetPasswordThunk = createAsyncThunk(
-  'auth/resetPasswordThunk',
-  async (data: { password: string; token: string }) => resetPasswordApi(data)
-);
-
 type TAuth = {
   isAuthChecked: boolean;
   isAuthenticated: boolean;
@@ -101,13 +87,11 @@ const authSlice = createSlice({
         state.loginUserRequest = true;
       })
       .addCase(getUserThunk.rejected, (state, action) => {
-        console.log(action.error);
         state.loginUserRequest = false;
         state.loginUserError = action.error.message;
         state.isAuthChecked = true;
       })
       .addCase(getUserThunk.fulfilled, (state, action) => {
-        console.log(action.payload);
         state.data = action.payload.user;
         state.loginUserRequest = false;
         state.isAuthenticated = true;
@@ -119,13 +103,11 @@ const authSlice = createSlice({
         state.loginUserRequest = true;
       })
       .addCase(logoutThunk.rejected, (state, action) => {
-        console.log(action.payload);
         state.loginUserRequest = true;
         state.loginUserError = action.error.message;
         state.isAuthChecked = false;
       })
       .addCase(logoutThunk.fulfilled, (state, action) => {
-        console.log(action.payload);
         state.data = {
           email: '',
           name: ''
@@ -136,6 +118,19 @@ const authSlice = createSlice({
         state.loginUserError = '';
         localStorage.setItem('refreshToken', '');
         setCookie('accessToken', '');
+      });
+    // add
+    builder
+      .addCase(updateUserThunk.pending, (state) => {
+        state.loginUserRequest = true;
+      })
+      .addCase(updateUserThunk.rejected, (state, action) => {
+        state.loginUserRequest = false;
+        state.loginUserError = action.error.message;
+      })
+      .addCase(updateUserThunk.fulfilled, (state, action) => {
+        state.data = action.payload.user;
+        state.loginUserRequest = false;
       });
   }
 });

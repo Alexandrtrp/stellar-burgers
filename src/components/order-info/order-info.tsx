@@ -3,10 +3,15 @@ import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
 import { useSelector } from '../../services/store';
+import { useLocation } from 'react-router-dom';
 
 export const OrderInfo: FC = () => {
   /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = useSelector((state) => state.burgers.orderData);
+  const location = useLocation();
+  const orderData =
+    location.pathname === '/profile/orders/:number'
+      ? useSelector((state) => state.burgers.myOrderModalData)
+      : useSelector((state) => state.burgers.orderData);
 
   const ingredients: TIngredient[] = useSelector(
     (state) => state.burgers.ingridients

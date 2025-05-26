@@ -49,7 +49,6 @@ type TInitialState = {
   orders: Array<TOrder>;
   loading: boolean;
   orderRequest: boolean;
-  modalIsOpened: boolean;
   orderData: TOrder | undefined;
   ingredientData: TIngredient | undefined;
   constructorItems: {
@@ -57,7 +56,7 @@ type TInitialState = {
     ingredients: TConstructorIngredient[];
   };
   myOrders: Array<TOrder>;
-  // myOrderData: TOrder | undefined;
+  myOrderModalData: TOrder;
 };
 
 const initialState: TInitialState = {
@@ -66,7 +65,6 @@ const initialState: TInitialState = {
   orderRequest: false,
   feed: {},
   orders: [],
-  modalIsOpened: false,
   orderData: {
     createdAt: '',
     ingredients: [],
@@ -105,16 +103,16 @@ const initialState: TInitialState = {
     },
     ingredients: []
   },
-  myOrders: []
-  // myOrderData: {
-  //   createdAt: '',
-  //   ingredients: [],
-  //   _id: '',
-  //   status: '',
-  //   name: '',
-  //   updatedAt: 'string',
-  //   number: 0
-  // }
+  myOrders: [],
+  myOrderModalData: {
+    _id: '',
+    status: '',
+    name: '',
+    createdAt: '',
+    updatedAt: '',
+    number: 0,
+    ingredients: []
+  }
 };
 
 const burgerSlice = createSlice({
@@ -159,6 +157,33 @@ const burgerSlice = createSlice({
     },
     deleteIngridientInOrder: (state, action) => {
       state.constructorItems.ingredients.splice(action.payload, 1);
+    },
+    resetOrderData: (state) => {
+      state.myOrderModalData = {
+        _id: '',
+        status: '',
+        name: '',
+        createdAt: '',
+        updatedAt: '',
+        number: 0,
+        ingredients: []
+      };
+      state.constructorItems = {
+        bun: {
+          _id: '',
+          name: '',
+          type: '',
+          proteins: 0,
+          fat: 0,
+          carbohydrates: 0,
+          calories: 0,
+          price: 0,
+          image: '',
+          image_large: '',
+          image_mobile: ''
+        },
+        ingredients: []
+      };
     }
   },
   extraReducers: (builder) => {
@@ -191,12 +216,24 @@ const burgerSlice = createSlice({
       .addCase(getOrdersThunk.pending, (state, action) => {
         state.loading = true;
       })
+      .addCase(getOrdersThunk.rejected, (state, action) => {
+        state.loading = false;
+      })
       .addCase(getOrdersThunk.fulfilled, (state, action) => {
         state.loading = false;
         state.myOrders = action.payload;
+      });
+    builder
+      .addCase(orderBurgerThunk.pending, (state, action) => {
+        state.loading = true;
       })
-      .addCase(getOrdersThunk.rejected, (state, action) => {
+      .addCase(orderBurgerThunk.rejected, (state, action) => {
         state.loading = false;
+      })
+      .addCase(orderBurgerThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.myOrders.push(action.payload.order);
+        state.myOrderModalData = action.payload.order;
       });
   }
 });
@@ -208,5 +245,6 @@ export const {
   addIngridientsToOrder,
   moveUpIngridient,
   moveDownIngridient,
-  deleteIngridientInOrder
+  deleteIngridientInOrder,
+  resetOrderData
 } = burgerSlice.actions;
